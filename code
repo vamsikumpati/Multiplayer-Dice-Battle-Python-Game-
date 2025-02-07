@@ -1,0 +1,95 @@
+import random
+import time
+
+# In-memory leaderboard
+leaderboard = {}
+
+def get_player_input(player_name):
+    """Gets and validates player input."""
+    while True:
+        try:
+            player = int(input(f"{player_name}, enter a number from 1-6: "))
+            if 1 <= player <= 6:
+                return player
+            else:
+                print("❌ Invalid number! Please enter a number between 1 and 6.")
+        except ValueError:
+            print("❌ Invalid input! Please enter a valid integer between 1 and 6.")
+
+def roll_dice():
+    """Simulates rolling a six-sided dice."""
+    return random.randint(1, 6)
+
+def play_round(players):
+    """Handles a round of the game and determines the winner."""
+    round_results = {}
+    print("\n--- 🎲 New Round Begins! 🎲 ---")
+    
+    for player in players:
+        input(f"{player}'s turn! Press Enter to roll the dice...")
+        player_roll = roll_dice()
+        print(f"{player} rolled: {player_roll}")
+        
+        # Bonus roll for rolling a 6
+        if player_roll == 6:
+            print("🎉 Bonus! You get an extra turn!")
+            bonus_roll = roll_dice()
+            print(f"Bonus roll: {bonus_roll}")
+            player_roll += bonus_roll
+        
+        round_results[player] = player_roll
+        time.sleep(1)
+    
+    # Determine the round winner
+    winner = max(round_results, key=round_results.get)
+    print(f"🏆 This round's winner: {winner} with {round_results[winner]} points!\n")
+    return winner
+
+def update_leaderboard(winner):
+    """Updates in-memory leaderboard."""
+    leaderboard[winner] = leaderboard.get(winner, 0) + 1
+
+def display_leaderboard():
+    """Displays the leaderboard in descending order."""
+    if not leaderboard:
+        print("🏆 No leaderboard data available yet.")
+        return
+    
+    print("\n🏆 Leaderboard 🏆")
+    for player, wins in sorted(leaderboard.items(), key=lambda x: x[1], reverse=True):
+        print(f"{player}: {wins} wins")
+
+def main():
+    """Main function to run the game."""
+    print("🎲 Welcome to Multiplayer Dice Battle! 🎲")
+    
+    num_players = int(input("Enter the number of players: "))
+    players = [input(f"Enter Player {i+1}'s name: ") for i in range(num_players)]
+    winning_score = int(input("Enter the winning score (e.g., 3): "))
+    
+    scores = {player: 0 for player in players}
+    
+    while max(scores.values()) < winning_score:
+        round_winner = play_round(players)
+        scores[round_winner] += 1
+        print("📊 Current Scores:")
+        for player, score in scores.items():
+            print(f"{player}: {score}")
+        print("\n")
+    
+    # Determine game winner
+    game_winner = max(scores, key=scores.get)
+    print(f"🎉 Congratulations {game_winner}, you won the game! 🎉")
+    
+    # Update and display leaderboard
+    update_leaderboard(game_winner)
+    display_leaderboard()
+    
+    # Ask for replay
+    if input("🔄 Do you want to play again? (yes/no): ").lower() == "yes":
+        main()
+    else:
+        print("👋 Thanks for playing! Goodbye!")
+
+if __name__ == "__main__":
+    main()
